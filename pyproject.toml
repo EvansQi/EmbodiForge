@@ -1,0 +1,43 @@
+[project]
+name = "embodiedforge"
+version = "0.1.0"
+description = "Offline robot episode processing pipeline: raw episodes -> training samples with skill, mask, affordance, 3D geometry"
+readme = "README.md"
+authors = [
+    { name = "EvansQi", email = "3390400164@qq.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "numpy>=1.24",
+    "pillow>=10.0",
+    "opencv-python>=4.8",
+    "matplotlib>=3.7",
+    "rich>=13.0",
+    "click>=8.0",
+]
+
+[project.optional-dependencies]
+vision = [
+    "torch>=2.0",
+    "torchvision>=0.15",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+# NOTE: grounding, sam2, depth extras require manual installation
+# of GroundingDINO, SAM2, Depth Anything from their respective repos.
+# See README for instructions. They are NOT on PyPI.
+
+[project.scripts]
+eforge = "embodiedforge.cli.main:cli"
+
+[build-system]
+requires = ["uv_build>=0.11.19,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

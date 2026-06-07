@@ -1,0 +1,50 @@
+# EmbodiedForge demo pipeline configuration
+# All backends default to 'mock' for environments without CUDA/GPU models.
+# Change 'backend' values to switch to real model implementations.
+
+ingest:
+  fps: 30.0
+
+segment:
+  # Skills to detect (ordered)
+  skills:
+    - reach
+    - grasp
+    - lift
+    - place
+  # Detection thresholds
+  force_threshold: 5.0
+  velocity_threshold: 0.01
+  gripper_close_threshold: 0.5
+  min_stage_frames: 5
+
+semantic:
+  # Options: mock, qwen_vl_local, qwen_vl_remote
+  backend: mock
+  kwargs: {}
+
+grounding:
+  # Options: mock, groundingdino_local
+  backend: mock
+  confidence_threshold: 0.3
+  kwargs: {}
+
+segmentation:
+  # Options: mock, sam2_local, sam2_remote
+  backend: mock
+  kwargs: {}
+
+affordance:
+  sigma_factor: 0.15
+
+depth:
+  # Options: mock, depth_anything_local
+  backend: mock
+  base_depth: 0.5
+  kwargs: {}
+
+qc:
+  min_mask_area: 100
+  max_mask_ratio: 0.8
+  min_bbox_ratio: 0.01
+  max_bbox_ratio: 0.9

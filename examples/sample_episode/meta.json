@@ -1,0 +1,12 @@
+{
+  "episode_id": "sample_episode_001",
+  "task_instruction": "pick up the red cup from the table",
+  "robot_name": "sim_robot_v1",
+  "fps": 30.0,
+  "camera_intrinsics": {
+    "fx": 500.0,
+    "fy": 500.0,
+    "cx": 320.0,
+    "cy": 240.0
+  }
+}

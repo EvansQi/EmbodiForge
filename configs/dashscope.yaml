@@ -1,0 +1,57 @@
+# EmbodiedForge pipeline — 阿里云 DashScope (Qwen-VL API) 配置
+#
+# 使用方式:
+#   1. 设置环境变量: export DASHSCOPE_API_KEY=sk-xxxxxxxxxxxxxxxxxx
+#      或直接在下面填写 api_key
+#   2. 运行: eforge run-all --episode-dir examples/sample_episode --config configs/dashscope.yaml
+#
+# 注意: 除 semantic 外，其余 stage 仍使用 mock backend
+
+ingest:
+  fps: 30.0
+
+segment:
+  skills:
+    - reach
+    - grasp
+    - lift
+    - place
+  force_threshold: 5.0
+  velocity_threshold: 0.01
+  gripper_close_threshold: 0.5
+  min_stage_frames: 5
+
+# ===== Qwen-VL via DashScope API =====
+semantic:
+  backend: qwen_vl_remote
+  kwargs:
+    provider: dashscope
+    model: qwen-vl-max            # 可选: qwen-vl-max, qwen-vl-plus
+    api_key: ""                   # 留空则从环境变量 DASHSCOPE_API_KEY 读取
+    # api_key: sk-xxxxxxxxxxxx    # 或直接填在这里
+    max_tokens: 512
+    temperature: 0.1
+    timeout: 60
+
+grounding:
+  backend: mock
+  confidence_threshold: 0.3
+  kwargs: {}
+
+segmentation:
+  backend: mock
+  kwargs: {}
+
+affordance:
+  sigma_factor: 0.15
+
+depth:
+  backend: mock
+  base_depth: 0.5
+  kwargs: {}
+
+qc:
+  min_mask_area: 100
+  max_mask_ratio: 0.8
+  min_bbox_ratio: 0.01
+  max_bbox_ratio: 0.9
