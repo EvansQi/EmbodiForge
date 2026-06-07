@@ -62,6 +62,7 @@ ipython_config.py
 # ===== Project-specific =====
 # Pipeline outputs (generated at runtime)
 artifacts/
+artifacts_dashscope/
 
 # Generated sample data (except directory structure)
 examples/sample_episode/front_rgb/
@@ -75,10 +76,11 @@ checkpoints/
 *.bin
 *.ckpt
 
-# Secrets
+# Secrets (contain API keys — NEVER commit)
 .env
 .env.*
 *.secret
+configs/dashscope.yaml
 !configs/.gitkeep
 
 # Logs

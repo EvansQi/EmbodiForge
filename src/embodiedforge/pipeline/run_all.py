@@ -27,7 +27,7 @@ from embodiedforge.viz.overlay import generate_overlays
 
 def load_config(config_path: str | Path) -> dict[str, Any]:
     """Load pipeline configuration from YAML file."""
-    with open(config_path) as f:
+    with open(config_path, encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
 
 
