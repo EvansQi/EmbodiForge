@@ -24,7 +24,7 @@ semantic:
   backend: qwen_vl_remote
   kwargs:
     provider: dashscope
-    model: qwen-vl-max
+    model: qwen3-vl-plus          # 推荐: qwen3-vl-plus (最新), qwen-vl-max (Qwen2.5-72B)
     api_key: ""                   # 填你的 API Key，或设置 DASHSCOPE_API_KEY 环境变量
     max_tokens: 512
     temperature: 0.1

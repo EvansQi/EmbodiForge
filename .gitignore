@@ -63,6 +63,7 @@ ipython_config.py
 # Pipeline outputs (generated at runtime)
 artifacts/
 artifacts_dashscope/
+artifacts_qwen3/
 
 # Generated sample data (except directory structure)
 examples/sample_episode/front_rgb/
