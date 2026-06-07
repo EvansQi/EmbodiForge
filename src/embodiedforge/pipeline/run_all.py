@@ -21,6 +21,7 @@ from embodiedforge.pipeline.ingest import ingest_episode
 from embodiedforge.pipeline.segment import segment_episode
 from embodiedforge.pipeline.segment_mask import segment_masks
 from embodiedforge.qc.checks import run_qc
+from embodiedforge.rl.signals import build_rl_signals
 from embodiedforge.schemas.sample import TrainingSample
 from embodiedforge.viz.overlay import generate_overlays
 
@@ -127,20 +128,42 @@ def run_all(
         status = "PASS" if check.passed else "FAIL"
         print(f"     [{status}] {check.name}: {check.message}")
 
-    # Stage 8: Visualization
-    print("[Stage 8] Generating visualizations...")
+    # Stage 8: RL signal generation
+    print("[Stage 8] Building RL signals...")
+    t = time.time()
+    rl_signals, rl_summary = build_rl_signals(
+        episode,
+        segments,
+        semantic,
+        grounding_results,
+        mask_results,
+        affordance_results,
+        geometry_results,
+        qc,
+        config.get("rl"),
+    )
+    stage_times["rl"] = time.time() - t
+    print(
+        f"  -> {len(rl_signals)} RL keyframes, "
+        f"episode_success={rl_summary.success}, "
+        f"dense_return={rl_summary.total_dense_reward:.2f}"
+    )
+
+    # Stage 9: Visualization
+    print("[Stage 9] Generating visualizations...")
     t = time.time()
     viz_paths = generate_overlays(episode_dir, mask_results, affordance_results, grounding_results, artifacts_dir)
     stage_times["viz"] = time.time() - t
     print(f"  -> {len(viz_paths)} overlay images generated")
 
-    # Stage 9: Export
-    print("[Stage 9] Exporting training sample...")
+    # Stage 10: Export
+    print("[Stage 10] Exporting training sample...")
     t = time.time()
     sample = export_sample(
         episode, segments, semantic, grounding_results,
         mask_results, affordance_results, geometry_results,
-        qc, export_dir,
+        qc, export_dir, config.get("export"),
+        rl_signals=rl_signals, rl_summary=rl_summary,
     )
     stage_times["export"] = time.time() - t
     print(f"  -> Exported to {export_dir / episode.meta.episode_id / 'sample.json'}")

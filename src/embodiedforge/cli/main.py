@@ -183,6 +183,48 @@ def qc_cmd(episode_dir: str, config_path: str, output_dir: str):
         click.echo(f"  [{status}] {check.name}: {check.message}")
 
 
+@cli.command("build-rl-signals")
+@click.option("--episode-dir", required=True, type=click.Path(exists=True))
+@click.option("--config", "config_path", default="configs/demo.yaml", type=click.Path())
+@click.option("--output-dir", default="artifacts", type=click.Path())
+def build_rl_signals_cmd(episode_dir: str, config_path: str, output_dir: str):
+    """Build reward, success, and binary classifier targets for RL experiments."""
+    from embodiedforge.pipeline.annotate_3d import annotate_3d
+    from embodiedforge.pipeline.annotate_semantic import annotate_semantic
+    from embodiedforge.pipeline.build_heatmap import build_heatmaps
+    from embodiedforge.pipeline.ground import ground_objects
+    from embodiedforge.pipeline.ingest import ingest_episode
+    from embodiedforge.pipeline.segment import segment_episode
+    from embodiedforge.pipeline.segment_mask import segment_masks
+    from embodiedforge.pipeline.run_all import load_config
+    from embodiedforge.qc.checks import run_qc
+    from embodiedforge.rl.signals import build_rl_signals
+
+    config = load_config(config_path)
+    artifacts = Path(output_dir) / "artifacts"
+    episode = ingest_episode(episode_dir, config.get("ingest"))
+    segments = segment_episode(episode, config.get("segment"), artifacts)
+    semantic = annotate_semantic(episode, segments, config.get("semantic"), artifacts)
+    grounding = ground_objects(episode, semantic, config.get("grounding"), artifacts)
+    masks = segment_masks(episode, grounding, config.get("segmentation"), artifacts)
+    affordance = build_heatmaps(episode, semantic, masks, grounding, config.get("affordance"), artifacts)
+    geometry = annotate_3d(episode, affordance, config.get("depth"), artifacts)
+    qc = run_qc(episode.meta.episode_id, masks, affordance, segments, config.get("qc"))
+    signals, summary = build_rl_signals(
+        episode, segments, semantic, grounding, masks, affordance, geometry, qc, config.get("rl")
+    )
+
+    click.echo(
+        f"Built {len(signals)} RL signals: success={summary.success}, "
+        f"dense_return={summary.total_dense_reward:.2f}, sparse_return={summary.total_sparse_reward:.2f}"
+    )
+    for frame_idx, signal in sorted(signals.items()):
+        click.echo(
+            f"  f{frame_idx}: reward={signal.dense_reward:.2f}, "
+            f"success={signal.success}, subgoal={signal.subgoal_completed}"
+        )
+
+
 @cli.command("export")
 @click.option("--episode-dir", required=True, type=click.Path(exists=True))
 @click.option("--config", "config_path", default="configs/demo.yaml", type=click.Path())

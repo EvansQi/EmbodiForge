@@ -100,6 +100,8 @@ def export_lerobot_hdf5(
                     "all_passed": sample.qc.all_passed,
                     "n_checks": len(sample.qc.checks),
                 }))
+            if sample.rl:
+                meta_group.create_dataset("rl", data=json.dumps(sample.rl.model_dump()))
 
         return h5_path
     else:
@@ -128,6 +130,7 @@ def export_lerobot_hdf5(
                     "heatmap_path": kf.affordance_heatmap_path,
                     "keypoints_3d": kf.keypoints_3d,
                     "skill_soft": kf.skill_soft,
+                    "rl": kf.rl.model_dump() if kf.rl else None,
                 }
                 for kf in sample.keyframes
             ],
@@ -136,6 +139,7 @@ def export_lerobot_hdf5(
                 "all_passed": sample.qc.all_passed if sample.qc else False,
                 "checks": [c.model_dump() for c in sample.qc.checks] if sample.qc else [],
             },
+            "rl": sample.rl.model_dump() if sample.rl else None,
         }
 
         with open(json_path, "w") as f:

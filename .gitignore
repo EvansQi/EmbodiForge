@@ -64,6 +64,7 @@ ipython_config.py
 artifacts/
 artifacts_dashscope/
 artifacts_qwen3/
+artifacts_rl_check/
 
 # Generated sample data (except directory structure)
 examples/sample_episode/front_rgb/

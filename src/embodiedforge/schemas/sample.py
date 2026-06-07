@@ -16,6 +16,7 @@ from embodiedforge.schemas.geometry import (
     MaskResult,
     Point2D,
 )
+from embodiedforge.schemas.rl import RLKeyframeSignal, RLSummary
 
 
 class QCCheck(BaseModel):
@@ -70,6 +71,9 @@ class KeyframeAnnotation(BaseModel):
     # QC
     qc: Optional[QCSummary] = None
 
+    # RL-friendly supervision
+    rl: Optional[RLKeyframeSignal] = None
+
 
 class TrainingSample(BaseModel):
     """A complete training sample — the final export unit."""
@@ -86,6 +90,9 @@ class TrainingSample(BaseModel):
 
     # Overall QC
     qc: Optional[QCSummary] = None
+
+    # Episode-level RL summary
+    rl: Optional[RLSummary] = None
 
     # Provenance
     pipeline_version: str = Field(default="0.1.0")

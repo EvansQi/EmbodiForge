@@ -25,6 +25,12 @@ from embodiedforge.schemas.sample import (
     QCSummary,
     ExportManifest,
 )
+from embodiedforge.schemas.rl import (
+    RewardTerm,
+    BinaryClassifierTarget,
+    RLKeyframeSignal,
+    RLSummary,
+)
 
 __all__ = [
     "EpisodeMeta",
@@ -42,4 +48,8 @@ __all__ = [
     "TrainingSample",
     "QCSummary",
     "ExportManifest",
+    "RewardTerm",
+    "BinaryClassifierTarget",
+    "RLKeyframeSignal",
+    "RLSummary",
 ]

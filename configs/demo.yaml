@@ -43,6 +43,25 @@ depth:
   base_depth: 0.5
   kwargs: {}
 
+rl:
+  enabled: true
+  reward_scheme: heuristic_v1
+  gamma: 0.99
+  force_threshold: 5.0
+  gripper_close_threshold: 0.5
+  success_terminal_skills:
+    - grasp
+    - lift
+    - place
+    - insert
+  weights:
+    stage_progress: 0.25
+    alignment: 0.25
+    contact: 0.20
+    qc: 0.15
+    subgoal: 0.15
+    success_bonus: 1.0
+
 qc:
   min_mask_area: 100
   max_mask_ratio: 0.8

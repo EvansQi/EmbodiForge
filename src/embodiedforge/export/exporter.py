@@ -28,6 +28,7 @@ from embodiedforge.schemas.geometry import AffordanceResult, Geometry3DResult, M
 from embodiedforge.schemas.sample import ExportManifest, KeyframeAnnotation, QCSummary, TrainingSample
 from embodiedforge.schemas.segment import SegmentResult
 from embodiedforge.schemas.semantic import SemanticResult
+from embodiedforge.schemas.rl import RLKeyframeSignal, RLSummary
 
 
 def export_sample(
@@ -41,6 +42,8 @@ def export_sample(
     qc: QCSummary,
     export_dir: str | Path,
     config: dict[str, Any] | None = None,
+    rl_signals: dict[int, RLKeyframeSignal] | None = None,
+    rl_summary: RLSummary | None = None,
 ) -> TrainingSample:
     """Assemble and export a complete training sample.
 
@@ -60,6 +63,7 @@ def export_sample(
         The assembled TrainingSample.
     """
     config = config or {}
+    rl_signals = rl_signals or {}
     export_dir = Path(export_dir)
     ep_dir = export_dir / episode.meta.episode_id
     ep_dir.mkdir(parents=True, exist_ok=True)
@@ -122,6 +126,7 @@ def export_sample(
             affordance_heatmap_path=heatmap_path,
             keypoints_3d=kps3d,
             qc=None,  # Per-keyframe QC can be added later
+            rl=rl_signals.get(kf_idx),
         )
         keyframes.append(kf)
 
@@ -133,6 +138,7 @@ def export_sample(
         stages=segments.stages,
         keyframes=keyframes,
         qc=qc,
+        rl=rl_summary,
     )
 
     # Write sample.json (primary format)

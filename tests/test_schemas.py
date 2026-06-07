@@ -5,6 +5,7 @@ from embodiedforge.schemas.segment import SegmentResult, StageSegment
 from embodiedforge.schemas.semantic import SemanticAnnotation, SemanticResult
 from embodiedforge.schemas.geometry import BBox, Point2D, MaskResult, AffordanceResult
 from embodiedforge.schemas.sample import TrainingSample, QCCheck, QCSummary
+from embodiedforge.schemas.rl import RLKeyframeSignal, RLSummary
 
 
 def test_episode_meta():
@@ -74,3 +75,10 @@ def test_training_sample():
     sample = TrainingSample(episode_id="ep1", task_instruction="test")
     assert sample.episode_id == "ep1"
     assert len(sample.keyframes) == 0
+
+
+def test_rl_schemas():
+    signal = RLKeyframeSignal(frame_idx=3, dense_reward=0.8, success=True)
+    summary = RLSummary(enabled=True, success=True, total_dense_reward=1.2)
+    assert signal.success
+    assert summary.total_dense_reward == 1.2

@@ -11,7 +11,7 @@ from PIL import Image
 from embodiedforge.schemas.episode import EpisodeData, EpisodeMeta, FrameData
 from embodiedforge.schemas.segment import SegmentResult, StageSegment
 from embodiedforge.schemas.semantic import SemanticAnnotation, SemanticResult
-from embodiedforge.schemas.geometry import BBox, MaskResult, AffordanceResult, Point2D
+from embodiedforge.schemas.geometry import BBox, MaskResult, AffordanceResult, Point2D, Geometry3DResult, Keypoint3D
 
 
 def _make_test_episode(tmp_dir: Path, num_frames: int = 10) -> Path:
@@ -158,3 +158,59 @@ def test_qc():
         # The point (30, 25) should be inside the mask (10:40, 10:50)
         point_check = next(c for c in qc.checks if "point_in_mask" in c.name)
         assert point_check.passed
+
+
+def test_build_rl_signals():
+    from embodiedforge.pipeline.annotate_semantic import annotate_semantic
+    from embodiedforge.pipeline.ingest import ingest_episode
+    from embodiedforge.pipeline.segment import segment_episode
+    from embodiedforge.qc.checks import run_qc
+    from embodiedforge.rl.signals import build_rl_signals
+
+    with tempfile.TemporaryDirectory() as tmp:
+        ep_dir = _make_test_episode(Path(tmp))
+        episode = ingest_episode(ep_dir)
+        segments = segment_episode(episode)
+        semantic = annotate_semantic(episode, segments, {"backend": "mock"})
+
+        mask = np.zeros((48, 64), dtype=np.uint8)
+        mask[10:40, 10:50] = 255
+        mask_path = ep_dir / "mask.png"
+        Image.fromarray(mask).save(mask_path)
+
+        frame_idx = semantic.annotations[0].frame_idx
+        grounding = {frame_idx: {"object_bbox": BBox(x1=10, y1=10, x2=50, y2=40, confidence=0.9)}}
+        masks = {
+            frame_idx: MaskResult(frame_idx=frame_idx, mask_path=str(mask_path), mask_area=int(np.count_nonzero(mask)))
+        }
+        affordance = {
+            frame_idx: AffordanceResult(
+                frame_idx=frame_idx,
+                affordance_point=Point2D(x=30, y=25),
+                heatmap_path="",
+                heatmap_max=1.0,
+            )
+        }
+        geometry = {
+            frame_idx: Geometry3DResult(
+                frame_idx=frame_idx,
+                keypoints_3d=[Keypoint3D(x=0.0, y=0.0, z=0.5, label="affordance_point_3d")],
+            )
+        }
+        qc = run_qc(episode.meta.episode_id, masks, affordance, segments)
+
+        signals, summary = build_rl_signals(
+            episode,
+            segments,
+            semantic,
+            grounding,
+            masks,
+            affordance,
+            geometry,
+            qc,
+            {"enabled": True},
+        )
+
+        assert frame_idx in signals
+        assert signals[frame_idx].dense_reward > 0.0
+        assert summary.enabled
