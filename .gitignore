@@ -41,6 +41,7 @@ venv.bak/
 .pydevproject
 .settings/
 *.sublime-*
+*.code-workspace
 
 # ===== OS =====
 .DS_Store
@@ -61,10 +62,9 @@ ipython_config.py
 
 # ===== Project-specific =====
 # Pipeline outputs (generated at runtime)
-artifacts/
-artifacts_dashscope/
-artifacts_qwen3/
-artifacts_rl_check/
+artifacts*/
+outputs/
+runs/
 
 # Generated sample data (except directory structure)
 examples/sample_episode/front_rgb/
@@ -79,6 +79,7 @@ checkpoints/
 *.ckpt
 
 # Secrets (contain API keys — NEVER commit)
+# Copy configs/dashscope.yaml.example to configs/dashscope.yaml and fill in your key
 .env
 .env.*
 *.secret
@@ -93,3 +94,6 @@ logs/
 tmp/
 temp/
 *.tmp
+
+# ===== AI / Agents =====
+.claude/

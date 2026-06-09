@@ -136,7 +136,7 @@ uv run pytest tests/ -v
 semantic:
   backend: mock           # 可选: mock, qwen_vl_local, qwen_vl_remote
 grounding:
-  backend: mock           # 可选: mock, groundingdino_local
+  backend: mock           # 可选: mock, qwen_vl_remote, groundingdino_local
 segmentation:
   backend: mock           # 可选: mock, sam2_local, sam2_remote
 depth:
@@ -232,7 +232,7 @@ examples/
 | Ingest 数据加载 | ✅ 真实 | 读取真实 episode 目录结构 |
 | 时序阶段切分 | ✅ 真实 | 基于 gripper + velocity + force 的启发式切分 |
 | 语义标注 | 🟡 Mock | 接口已定义；mock 使用规则模板。真实：实现 Qwen-VL adapter |
-| 视觉定位 | 🟡 Mock | 接口已定义；mock 返回图像中心 bbox。真实：实现 GroundingDINO adapter |
+| 视觉定位 | 🟡 Mock | 接口已定义；mock 返回图像中心 bbox。远程：Qwen-VL API（✅），本地：GroundingDINO（待实现） |
 | 分割 Mask | 🟡 Mock | 接口已定义；mock 绘制椭圆 mask。真实：实现 SAM2 adapter |
 | Affordance 热力图 | ✅ 真实 | 高斯热力图计算是真实逻辑 |
 | 3D 几何 | 🟡 Mock | 接口已定义；mock 返回渐变深度图。真实：实现 Depth Anything adapter |
@@ -263,7 +263,34 @@ semantic:
 
 然后实现 `src/embodiedforge/backends/qwen_vl/adapters.py` 中的 `LocalQwenVLAdapter.label()` 方法。
 
-### 方式二：GroundingDINO 视觉定位
+远程 API（DashScope / vLLM）已完整实现，开箱即用：
+
+```yaml
+semantic:
+  backend: qwen_vl_remote
+  kwargs:
+    provider: dashscope
+    model: qwen3-vl-plus
+    api_key: sk-xxxx
+```
+
+### 方式二：Qwen-VL 视觉定位（推荐 ⭐）
+
+复用同一个 Qwen-VL API 做视觉定位，无需额外模型：
+
+```yaml
+grounding:
+  backend: qwen_vl_remote
+  confidence_threshold: 0.3
+  kwargs:
+    provider: dashscope
+    model: qwen3-vl-plus
+    api_key: sk-xxxx
+```
+
+与 semantic 共享同一个 API key 和 endpoint。实现位于 `src/embodiedforge/backends/qwen_vl/adapters.py` 中的 `RemoteQwenVLGroundingAdapter`。
+
+### 方式三：GroundingDINO 视觉定位（本地）
 
 ```bash
 pip install embodiedforge[grounding]
@@ -277,7 +304,9 @@ grounding:
     device: cuda
 ```
 
-### 方式三：SAM2 分割
+⚠ 当前为占位实现，`LocalGroundingDINOAdapter.ground()` 待接入真实模型推理。
+
+### 方式四：SAM2 分割
 
 ```bash
 pip install embodiedforge[sam2]
@@ -292,7 +321,7 @@ segmentation:
     device: cuda
 ```
 
-### 方式四：远程推理服务
+### 方式五：远程推理服务
 
 对于运行在独立环境（Docker、远程服务器）中的模型：
 
